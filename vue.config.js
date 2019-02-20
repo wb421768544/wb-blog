@@ -2,10 +2,11 @@ module.exports = {
   devServer: {
     open: true,
     proxy: {
-      '/getarticlelist/*': {
-        target: 'http://wangbing520.club:8080',
+      '/list/*': {
+        target: 'http://localhost:3000',
         changeOrigin: true,
-      }
+      },
     }
-  }
+  },
+  baseUrl: process.env.NODE_ENV === 'production' ? '/' : '/',
 }

@@ -1,79 +1,60 @@
 <template>
   <div class="top-bar" ref="topBar">
     <header>
-      <div>
-        <router-link to="/">
-          <img
-            class="logo"
-            alt="wb-icon"
-            src="../assets/wb.jpg"
-          />
+      <router-link to="/">
+        <img class="logo" alt="wb-icon" src="@/assets/wb.jpg" />
+      </router-link>
+      <div class="info-block">
+        <Search />
+        <router-link to="/write">
+          <button>写文章</button>
         </router-link>
-        <div class="info-block">
-          <span class="search-block">
-            <input
-              type="text"
-              placeholder="搜索文章/作者"
-              @focus="addFocusClassName"
-              @blur="removeFocusClassName"
-            />
-            <i class="icon-search" />
-          </span>
-          <router-link to="/write">
-            <button>写文章</button>
+        <template v-if="Auth.logedIn">
+          <router-link to="/message">
+            <i class="icon-tixing" />
           </router-link>
-          <template v-if="isLogin">
-            <router-link to="/message">
-              <i class="icon-tixing" />
-            </router-link>
-            <Avatar src="https://user-gold-cdn.xitu.io/2019/2/4/168b759092773515?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" />
-          </template>
-          <template v-else>
-            <router-link to="/login">
-              登录
-            </router-link>
-            <router-link to="/signup">
-              注册
-            </router-link>
-          </template>
-        </div>
+          <Avatar src="https://user-gold-cdn.xitu.io/2019/2/4/168b759092773515?imageView2/1/w/100/h/100/q/85/format/webp/interlace/1" />
+        </template>
+        <template v-else>
+          <router-link to="/login">登 录</router-link>
+          <router-link to="/signup">注 册</router-link>
+        </template>
       </div>
     </header>
     <nav>
       <ul ref="ul" @click="toggleCurrentClass">
         <li><a>推荐</a></li>
-        <li><a>OS</a></li>
-        <li><a>前端</a></li>
-        <li><a>后台</a></li>
-        <li><a>数据库</a></li>
-        <li><a>计算机网络</a></li>
+        <li v-for="item in types" :key="item"><a>{{ item }}</a></li>
       </ul>
     </nav>
   </div>
 </template>
 
 <script>
-import Avatar from './Avatar.vue';
-import { mapState } from 'vuex';
+import Auth from '@/plugins/auth';
+import Avatar from '@/components/avatar';
+import Search from './search.vue';
 
 export default {
   name: 'topBar',
   data() {
     return {
+      Auth,
       clear: 0,
       scrollTop: 0,
     };
   },
+  props: {
+    types: {
+      type: Array,
+      required: true,
+    }
+  },
   components: {
     Avatar,
+    Search,
   },
   methods: {
-    addFocusClassName({ target }) {
-      target.parentNode.classList.add('focus');
-    },
-    removeFocusClassName({ target }) {
-      target.parentNode.classList.remove('focus');
-    },
     toggleCurrentClass({ target }) {
       if (target.tagName !== 'UL') {
         [...this.$refs.ul.children].forEach(li => {
@@ -93,20 +74,17 @@ export default {
           this.$refs.topBar.classList.remove('scroll-down');
         }
         this.scrollTop = document.documentElement.scrollTop;
-      }, 200);
+      }, 150);
     },
   },
-  computed: mapState({
-    isLogin: state => state.isLogin,
-  }),
   mounted() {
     this.scrollTop = document.documentElement.scrollTop;
     window.addEventListener('scroll', this.handleScroll);
   },
   beforeDestroy() {
     window.removeEventListener('scroll', this.handleScroll);
-  }
-}
+  },
+};
 </script>
 
 <style lang="stylus" scoped>
@@ -116,7 +94,6 @@ a, button
 .current, .icon-search
   cursor pointer
 i, li
-.search-block
   display inline-block
 .top-bar, a:visited
   color #909090
@@ -132,7 +109,8 @@ ul
 a
   text-decoration none
 .top-bar 
-  transition transform .2s
+  transition transform .2s ease
+  background-color #fff
   position fixed
   top 0
   left 0
@@ -146,11 +124,10 @@ a:hover
   vertical-align middle
 header
   border-bottom 1px solid #f1f1f1
-  > div
-    display flex
-    flex-direction row
-    justify-content space-between
-header > div
+  display flex
+  flex-direction row
+  justify-content space-between
+header
 nav > ul
   box-sizing border-box
   margin 0 auto
@@ -184,11 +161,6 @@ button
     font-size 1.3em
     vertical-align middle
     transform translateX(-150%)
-.focus
-  input 
-    border 1px solid #007fff
-  i 
-    color #007fff
 .info-block
   flex-basis 45%
   justify-content space-between
